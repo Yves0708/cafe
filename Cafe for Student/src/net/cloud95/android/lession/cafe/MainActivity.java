@@ -7,10 +7,13 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
@@ -32,7 +35,15 @@ public class MainActivity extends Activity {
 	private int iceIndex = 4;
 	//目前選擇的糖
 	private int sugarIndex = 4;
-	private Order order;
+	//private Order order;
+	private final static int MAX_ORDER = 10;
+	private Order[] orders;
+	private Spinner spinner01;
+	private String[] spinnerList;
+	private ArrayAdapter<String> aa01;
+	private int orderIndex = 0;
+	private int choice =-1;
+	private Cafe tempCafe;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,10 +87,37 @@ public class MainActivity extends Activity {
 		cafebtns[7].setTag(7);
 		tv_order =(TextView) findViewById(R.id.tv_order);
 		tv_money =(TextView) findViewById(R.id.tv_money);
+		
+		spinner01 = (Spinner)findViewById(R.id.spinner1);
 	}
 	
 	private void processControl(){
-		order  = new Order();
+		//order  = new Order();
+		orders = new Order[MAX_ORDER];
+		for(int i=0;i<MAX_ORDER;i++){
+			orders[i]=new Order();
+			spinnerList[i] = new String("#"+String.valueOf(300+(i+1)));
+		}
+		aa01 = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,spinnerList);
+		spinner01.setAdapter(aa01);
+		spinner01.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+		 {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				// TODO Auto-generated method stub
+				orderIndex = position;
+				tv_order.setText(orders[orderIndex].toString());
+				refreshOrdersMoney();
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		//設定 RadioGroup 改選的監聽
 		MyOnCheckedChangeListener myOnCheckedChangeListener = new MyOnCheckedChangeListener();
 		sizerg.setOnCheckedChangeListener(myOnCheckedChangeListener);
@@ -120,10 +158,11 @@ public class MainActivity extends Activity {
 			if(temp_order.length()>0){
 				temp_order+="、";
 			}
-		order.add(new Cafe(sizeIndex,iceIndex,sugarIndex,(Integer)view.getTag(),Cafe.cafePrice[(Integer)view.getTag()][sizeIndex]));
+		orders[orderIndex].add(new Cafe(sizeIndex,iceIndex,sugarIndex,(Integer)view.getTag(),Cafe.cafePrice[(Integer)view.getTag()][sizeIndex]));
 			
-			tv_order.setText(order.toString());
-			tv_money.setText(String.valueOf(order.getSubtotal()));
+			tv_order.setText(orders[orderIndex].toString());
+			tv_money.setText(String.valueOf(orders[orderIndex].getSubtotal()));
+			refreshOrdersMoney();
 		}
 		
 		
@@ -135,10 +174,11 @@ public class MainActivity extends Activity {
 			public boolean onLongClick(View view) {
 				// TODO Auto-generated method stub
 				
-			order.del(new Cafe(sizeIndex,iceIndex,sugarIndex,(Integer)view.getTag(),Cafe.cafePrice[(Integer)view.getTag()][sizeIndex]));
+			Cafe delTarget = new Cafe(sizeIndex,iceIndex,sugarIndex,(Integer)view.getTag(),Cafe.cafePrice[(Integer)view.getTag()][sizeIndex]);
 				
-				tv_order.setText(order.toString());
-				tv_money.setText(String.valueOf(order.getSubtotal()));
+				tv_order.setText(orders[orderIndex].toString());
+				tv_money.setText(String.valueOf(orders[orderIndex].getSubtotal()));
+				refreshOrdersMoney();
 				return true;//如果傳回false則表示還沒結束會再點擊按鈕一次
 			}
 			
@@ -191,5 +231,13 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
+	//刷新 金額 文字內容
+	private void refreshOrdersMoney(){
+		float total =0;
+		for(int i=0;i<MAX_ORDER;i++){
+			total+=orders[i].getSubtotal();
+		}
+		tv_money.setText(String.valueOf(orders[orderIndex].getSubtotal())+"/"+String.valueOf(total));
+		
+	}
 }
