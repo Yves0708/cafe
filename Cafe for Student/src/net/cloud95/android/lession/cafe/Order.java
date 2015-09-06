@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
-	private List<Cafe> cafes;
+	private List<Cafe> cafes=null;
 
 	public Order() {
 		cafes = new ArrayList<Cafe>();
@@ -113,4 +113,15 @@ public class Order {
 		}
 		return 0;
 	}
+	
+	//取得咖啡杯數
+		int getCafesNumber(Cafe cafe){
+			int result=0;
+			if(cafes!=null){
+				for(Cafe temp:cafes){
+					if(temp.equals(cafe))result++;
+				}
+			}
+			return 0;
+		}
 }
